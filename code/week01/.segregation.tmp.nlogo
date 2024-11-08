@@ -594,6 +594,17 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="batch run" repetitions="100" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100"/>
+    <metric>average-similarity</metric>
+    <metric>unhappiness</metric>
+    <steppedValueSet variable="density" first="0.1" step="0.1" last="0.9"/>
+    <steppedValueSet variable="similarity-threshold" first="0.05" step="0.05" last="0.7"/>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
