@@ -1,8 +1,8 @@
-;; this code is inspired by the code from Paul E. Smaldino
+;; This code is inspired by the code from Paul E. Smaldino, with modifications
 ;; Paul Smaldino. (2024). psmaldino/modsoc: Modeling Social Behavior (v1.0). Zenodo. https://doi.org/10.5281/zenodo.11245354
 
-;; programmer: Eric Araújo
-;; last change: 11/06/2024
+;; programmer: Eric Araújo (eric.araujo@calvin.edu)
+;; last change: 11/11/2024
 
 
 globals [
@@ -51,7 +51,7 @@ to update-households
   ask households [
     let similar-nearby count (households-on neighbors) with [ color = [color] of myself ]
     let total-nearby count (households-on neighbors)
-    ifelse (total-nearby = 0)
+    ifelse (total-nearby = 0) ;; if a household has no neighbors, consider it a happy household (100% chance of being happy)
     [set prop-similar-neighbors 1]
     [set prop-similar-neighbors (similar-nearby / total-nearby)]
     set happy? (prop-similar-neighbors >= similarity-threshold)
@@ -122,7 +122,7 @@ similarity-threshold
 similarity-threshold
 0
 1
-0.76
+0.67
 0.01
 1
 NIL
@@ -251,11 +251,13 @@ PENS
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+This is a model for the Schelling's segregation model. It is inspired by the code provided by Paul Smaldino. (2024). psmaldino/modsoc: Modeling Social Behavior (v1.0). Zenodo. https://doi.org/10.5281/zenodo.11245354.
+
+This code was created in class during the CS300 Agent Modeling course at Calvin University during Fall semester 2024.
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+The model provides two sliders for density (how populated the world is) and similarity threshold (how many neighbors should be the same color as me).
 
 ## HOW TO USE IT
 
@@ -594,6 +596,17 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="batch run" repetitions="100" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="100"/>
+    <metric>average-similarity</metric>
+    <metric>unhappiness</metric>
+    <steppedValueSet variable="density" first="0.1" step="0.1" last="0.9"/>
+    <steppedValueSet variable="similarity-threshold" first="0.05" step="0.05" last="0.9"/>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
