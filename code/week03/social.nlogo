@@ -1,9 +1,8 @@
-
-
 breed [ people person ]
 
 people-own [ opinion ]
 
+;;; ------ SETUP Methods ----------
 
 to setup
   ca
@@ -26,6 +25,48 @@ to update-colors
   ask people [
     set color (opinion + 1) * 9.9 / 2
   ]
+end
+
+
+;;; ------ GO Methods ----------
+
+to go
+  ask one-of people [
+    let x1 opinion ;; my opinion
+    let other-person nobody
+    ifelse spatial-interactions? [
+      set other-person one-of other people-on neighbors4
+    ][
+      set other-person one-of other people
+    ]
+
+    let x2 [opinion] of other-person ;; other agent's opinion
+
+    ifelse model-type = "positive" [
+      let x1-new (x1 + learning-rate * (x2 - x1))
+      let x2-new (x2 + learning-rate * (x1 - x2))
+      set opinion x1-new
+      ask other-person [ set opinion x2-new ]
+    ][
+      if (abs (x1 - x2) < confidence-threshold) [
+        let x1-new (x1 + learning-rate * (x2 - x1))
+        let x2-new (x2 + learning-rate * (x1 - x2))
+        set opinion x1-new
+        ask other-person [ set opinion x2-new ]
+      ]
+    ]
+  ]
+  update-colors
+  tick
+
+end
+
+to plot-opinions
+  if (ticks mod 100 = 0) [
+    ask people [
+       plotxy ticks opinion
+    ]
+]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -85,6 +126,88 @@ NIL
 NIL
 NIL
 NIL
+1
+
+BUTTON
+115
+46
+178
+79
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+MONITOR
+24
+200
+191
+245
+NIL
+mean [opinion] of people
+8
+1
+11
+
+PLOT
+749
+10
+1476
+536
+plot 1
+NIL
+NIL
+0.0
+10.0
+-1.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 2 -16777216 true "" "plot-opinions"
+
+SLIDER
+15
+145
+191
+178
+confidence-threshold
+confidence-threshold
+0
+1
+0.21
+0.01
+1
+NIL
+HORIZONTAL
+
+SWITCH
+15
+254
+199
+287
+spatial-interactions?
+spatial-interactions?
+1
+1
+-1000
+
+CHOOSER
+16
+303
+195
+348
+model-type
+model-type
+"positive" "bounded-confidence"
 1
 
 @#$#@#$#@
