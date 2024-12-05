@@ -31,23 +31,31 @@ end
 ;;; ------ GO Methods ----------
 
 to go
+  if ticks = 80000 [stop]
   ask one-of people [
-    let x1 opinion ;; my opinion
-    let other-person nobody
-    ifelse spatial-interactions? [
+    let x1 opinion ;; save my opinion on x1
+    let other-person nobody ;; initialize other-person as null
+
+    ifelse spatial-interactions? [ ;; spatial-interactions or random encounters?
       set other-person one-of other people-on neighbors4
     ][
       set other-person one-of other people
     ]
 
-    let x2 [opinion] of other-person ;; other agent's opinion
+    let x2 [opinion] of other-person ;; save other agent's opinion to x2
 
-    ifelse model-type = "positive" [
+    ;; I've created a new switch called "bounded?" to define the directions of the model.
+
+    ;; basic model, positive influence alone
+    if not bounded? and not repulsive? [
       let x1-new (x1 + learning-rate * (x2 - x1))
       let x2-new (x2 + learning-rate * (x1 - x2))
       set opinion x1-new
       ask other-person [ set opinion x2-new ]
-    ][
+    ]
+
+    ;; bounded confidence (BC) model
+    if bounded? [
       if (abs (x1 - x2) < confidence-threshold) [
         let x1-new (x1 + learning-rate * (x2 - x1))
         let x2-new (x2 + learning-rate * (x1 - x2))
@@ -55,10 +63,28 @@ to go
         ask other-person [ set opinion x2-new ]
       ]
     ]
+
+
+    ;; negative influence model
+    if bounded? and repulsive? [
+      if (abs (x1 - x2) > confidence-threshold) [
+        ifelse (x1 > x2) [
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 - x1) / 2)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 + x2) / 2)
+          set opinion x1-new
+          ask other-person [ set opinion x2-new ]
+        ][ ;; else
+          let x1-new (x1 + learning-rate * (x1 - x2) * (1 + x1) / 2)
+          let x2-new (x2 + learning-rate * (x2 - x1) * (1 - x2) / 2)
+          set opinion x1-new
+          ask other-person [ set opinion x2-new ]
+        ]
+      ]
+    ]
+
   ]
   update-colors
   tick
-
 end
 
 to plot-opinions
@@ -146,10 +172,10 @@ NIL
 1
 
 MONITOR
-24
-200
-191
-245
+749
+546
+916
+591
 NIL
 mean [opinion] of people
 8
@@ -177,38 +203,68 @@ PENS
 SLIDER
 15
 145
-191
+190
 178
 confidence-threshold
 confidence-threshold
 0
 1
-0.21
+0.91
 0.01
 1
 NIL
 HORIZONTAL
 
 SWITCH
-15
-254
-199
-287
+16
+191
+190
+224
 spatial-interactions?
 spatial-interactions?
 1
 1
 -1000
 
-CHOOSER
-16
-303
-195
-348
-model-type
-model-type
-"positive" "bounded-confidence"
+SWITCH
+15
+234
+133
+267
+bounded?
+bounded?
+0
 1
+-1000
+
+SWITCH
+14
+273
+133
+306
+repulsive?
+repulsive?
+0
+1
+-1000
+
+PLOT
+214
+551
+742
+807
+plot 2
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 1 -5298144 true "set-plot-x-range -1.1 1.1\nset-histogram-num-bars 40" "histogram [opinion] of people"
 
 @#$#@#$#@
 ## WHAT IS IT?
